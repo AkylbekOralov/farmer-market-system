@@ -5,6 +5,8 @@ const { validate } = require("deep-email-validator");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 
+const authRoutes = require("./auth");
+
 const app = express();
 const port = 8383;
 
@@ -24,6 +26,7 @@ pool.connect((err) => {
 
 app.use(cors());
 app.use(express.json());
+app.use(authRoutes);
 
 // Nodemailer setup for sending email
 const transporter = nodemailer.createTransport({
@@ -87,9 +90,9 @@ app.post("/farmer-register", async (req, res) => {
 
     // Insert farmer into PostgreSQL
     const sql = `
-      INSERT INTO farmers (username, email, password, role, phone, farmAddress, farmSize, typesOfCrops, iin, isVerified, verificationToken)
-      VALUES ($1, $2, $3, 'farmer', $4, $5, $6, $7, $8, $9, $10)
-      RETURNING *`;
+        INSERT INTO farmers (username, email, password, role, phone, farmAddress, farmSize, typesOfCrops, iin, isVerified, verificationToken)
+        VALUES ($1, $2, $3, 'farmer', $4, $5, $6, $7, $8, $9, $10)
+        RETURNING *`;
     const values = [
       name,
       email,
@@ -142,9 +145,9 @@ app.post("/buyer-register", async (req, res) => {
 
     // Insert buyer into PostgreSQL
     const sql = ` 
-      INSERT INTO buyers (username, email, password, role, phone, deliveryAddress, payment, isVerified, verificationToken)
-      VALUES ($1, $2, $3, 'buyer', $4, $5, $6, $7, $8)
-      RETURNING *`;
+        INSERT INTO buyers (username, email, password, role, phone, deliveryAddress, payment, isVerified, verificationToken)
+        VALUES ($1, $2, $3, 'buyer', $4, $5, $6, $7, $8)
+        RETURNING *`;
     const values = [
       name,
       email,
