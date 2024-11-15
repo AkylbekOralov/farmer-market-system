@@ -12,7 +12,6 @@ const BuyersProfile = sequelize.define(
       primaryKey: true,
     },
     delivery_address: DataTypes.STRING,
-    payment_method: DataTypes.STRING,
   },
   {
     tableName: "buyers_profile",

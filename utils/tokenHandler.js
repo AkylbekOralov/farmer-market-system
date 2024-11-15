@@ -1,10 +1,12 @@
-// utils/tokenHandler.js
+// utils/tokenHandler
 const jwt = require("jsonwebtoken");
 
-exports.generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "1h" });
+// Generate a token with the email directly as the payload
+exports.generateToken = (email) => {
+  return jwt.sign(email, process.env.JWT_SECRET, { expiresIn: "1h" });
 };
 
+// Verify token and return the decoded email directly
 exports.verifyToken = (token) => {
   return jwt.verify(token, process.env.JWT_SECRET);
 };
