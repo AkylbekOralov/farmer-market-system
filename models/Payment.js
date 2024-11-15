@@ -15,13 +15,6 @@ const Payment = sequelize.define(
       onDelete: "CASCADE",
       primaryKey: true,
     },
-    card_type: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        isIn: [["VISA", "MASTERCARD", "OTHER"]],
-      },
-    },
     card_number: {
       type: DataTypes.STRING(16),
       allowNull: false,

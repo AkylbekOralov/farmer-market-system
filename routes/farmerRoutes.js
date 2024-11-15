@@ -1,14 +1,20 @@
 // routes/farmerRoutes.js
 const express = require("express");
-const { addProduct, viewOrders } = require("../controllers/farmerController");
+const { addProduct, editProduct } = require("../controllers/farmerController");
 const isFarmer = require("../middlewares/isFarmer");
+const upload = require("../utils/upload"); // Import the multer upload configuration
 
 const router = express.Router();
 
-// Route for adding a product
-router.post("/product", isFarmer, addProduct);
+// Route to add a product with up to 5 images
+router.post("/add-product", isFarmer, upload.array("images", 5), addProduct);
 
-// Route for viewing all orders for the farmer
-router.get("/orders", isFarmer, viewOrders);
+// Route to edit a product with up to 5 new images
+router.patch(
+  "/edit-product/:id",
+  isFarmer,
+  upload.array("images", 5),
+  editProduct
+);
 
 module.exports = router;

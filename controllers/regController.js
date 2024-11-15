@@ -17,7 +17,6 @@ exports.registerUser = async (req, res) => {
     farm_size,
     types_of_crops,
     iin,
-    card_type,
     card_number,
     expire_date,
     owner_name,
@@ -43,25 +42,6 @@ exports.registerUser = async (req, res) => {
     // Set admin_verified based on the role
     const isAdminVerified = role === "buyer";
 
-    // Parse `types_of_crops` if it's a string
-    let cropsArray = [];
-    if (typeof types_of_crops === "string") {
-      try {
-        cropsArray = JSON.parse(types_of_crops);
-      } catch (error) {
-        return res
-          .status(400)
-          .json({ message: "Invalid format for types_of_crops" });
-      }
-    } else if (Array.isArray(types_of_crops)) {
-      cropsArray = types_of_crops;
-    }
-
-    // Get the file path of the uploaded image
-    const profile_picture = req.file
-      ? `/uploads/profile_pictures/${req.file.filename}`
-      : null;
-
     // Create user record
     const newUser = await User.create({
       username,
@@ -69,7 +49,6 @@ exports.registerUser = async (req, res) => {
       password: hashedPassword,
       phone,
       role,
-      profile_picture,
       email_verified: false,
       admin_verified: isAdminVerified, // Set true for buyers, false for others
       token,
@@ -81,7 +60,7 @@ exports.registerUser = async (req, res) => {
         user_id: newUser.id,
         farm_address,
         farm_size,
-        types_of_crops: cropsArray,
+        types_of_crops,
         iin,
       });
     } else if (role === "buyer") {
@@ -92,7 +71,6 @@ exports.registerUser = async (req, res) => {
 
       await Payment.create({
         user_id: newUser.id,
-        card_type,
         card_number,
         expire_date,
         owner_name,

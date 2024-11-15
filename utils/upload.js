@@ -5,15 +5,15 @@ const path = require("path");
 // Configure storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/profile_pictures"); // Folder to store profile pictures
+    cb(null, "uploads/product_images");
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname)); // Set unique filename
+    cb(null, uniqueSuffix + path.extname(file.originalname));
   },
 });
 
-// Filter only image files
+// File filter for images only
 const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image/")) {
     cb(null, true);
@@ -22,11 +22,10 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Configure multer
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 1024 * 1024 * 5 }, // Limit size to 5MB
   fileFilter: fileFilter,
+  limits: { fileSize: 1024 * 1024 * 5 }, // 5MB limit per image
 });
 
 module.exports = upload;

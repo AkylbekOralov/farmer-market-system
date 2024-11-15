@@ -1,16 +1,27 @@
 // controllers/farmerController.js
 const { Product } = require("../models");
+const path = require("path");
+const fs = require("fs");
 
 exports.addProduct = async (req, res) => {
-  const { name, price, quantity, description } = req.body;
+  const { name, price, quantity, description, category_id, unit_of_measure } =
+    req.body;
 
   try {
+    // Process image URLs
+    const imagePaths = req.files.map((file) =>
+      path.join("uploads/product_images", file.filename)
+    );
+
     const product = await Product.create({
       farmer_id: req.user.id,
       name,
       price,
       quantity,
       description,
+      category_id,
+      unit_of_measure,
+      images: imagePaths, // Save image paths as an array
     });
 
     res.status(201).json({ message: "Product added successfully", product });
@@ -20,12 +31,71 @@ exports.addProduct = async (req, res) => {
   }
 };
 
-exports.viewOrders = async (req, res) => {
+exports.editProduct = async (req, res) => {
+  const { id } = req.params; // product ID
+  const {
+    name,
+    price,
+    quantity,
+    description,
+    category_id,
+    unit_of_measure,
+    removeImages,
+  } = req.body;
+
   try {
-    const orders = await Order.findAll({ where: { farmer_id: req.user.id } });
-    res.status(200).json(orders);
+    // Find the product
+    const product = await Product.findOne({
+      where: { id, farmer_id: req.user.id },
+    });
+
+    if (!product) {
+      return res.status(404).json({
+        message:
+          "Product not found or you don't have permission to edit this product.",
+      });
+    }
+
+    // Update fields if provided in the request body
+    product.name = name || product.name;
+    product.price = price || product.price;
+    product.quantity = quantity || product.quantity;
+    product.description = description || product.description;
+    product.category_id = category_id || product.category_id;
+    product.unit_of_measure = unit_of_measure || product.unit_of_measure;
+
+    // Handle removing images from the server and database
+    if (removeImages && Array.isArray(removeImages)) {
+      const updatedImages = product.images.filter(
+        (img) => !removeImages.includes(img)
+      );
+
+      // Delete the removed images from the server
+      for (const imagePath of removeImages) {
+        const fullPath = path.join(__dirname, "../", imagePath);
+        fs.unlink(fullPath, (err) => {
+          if (err) console.error(`Error deleting image ${fullPath}:`, err);
+        });
+      }
+
+      // Update product images
+      product.images = updatedImages;
+    }
+
+    // Handle new image uploads if they exist
+    if (req.files && req.files.length > 0) {
+      const newImagePaths = req.files.map((file) =>
+        path.join("uploads/product_images", file.filename)
+      );
+      product.images = [...product.images, ...newImagePaths]; // Combine existing and new images
+    }
+
+    // Save updated product
+    await product.save();
+
+    res.status(200).json({ message: "Product updated successfully", product });
   } catch (error) {
-    console.error(error);
+    console.error("Error updating product:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
