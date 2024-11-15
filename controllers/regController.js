@@ -1,5 +1,5 @@
 // controllers/regController.js
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { sendEmail } = require("../utils/sendEmail");
 const { User, FarmersProfile, BuyersProfile, Payment } = require("../models");

@@ -1,6 +1,6 @@
 // controllers/authController.js
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const { User } = require("../models");
 const { generateLoginToken } = require("../utils/loginTokenHandler");
 const { Op } = require("sequelize");
