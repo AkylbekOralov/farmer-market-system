@@ -6,7 +6,7 @@ exports.generateLoginToken = (user) => {
   return jwt.sign(
     { id: user.id, role: user.role, email: user.email }, // Include necessary fields
     process.env.JWT_SECRET,
-    { expiresIn: "1h" } // Set expiration as needed
+    { expiresIn: "3h" } // Set expiration as needed
   );
 };
 

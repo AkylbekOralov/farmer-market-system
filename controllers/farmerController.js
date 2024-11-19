@@ -2,6 +2,36 @@
 const { Product } = require("../models");
 const path = require("path");
 const fs = require("fs");
+const { FarmersProfile, User } = require("../models");
+
+exports.getFarmerProfile = async (req, res) => {
+  try {
+    const farmer = await FarmersProfile.findOne({
+      where: { user_id: req.user.id }, // Ensure `req.user.id` is set by middleware
+      attributes: ["farm_address", "farm_size", "types_of_crops"], // Select only necessary fields
+    });
+
+    if (!farmer) {
+      return res.status(404).json({ message: "Farmer profile not found" });
+    }
+
+    const user = await User.findOne({
+      where: { id: req.user.id },
+      attributes: ["username", "email", "profile_picture"],
+    });
+
+    res.status(200).json({
+      name: user.username,
+      email: user.email,
+      farmAddress: farmer.farm_address,
+      farmSize: farmer.farm_size,
+      crops: farmer.types_of_crops,
+    });
+  } catch (error) {
+    console.error("Error fetching farmer profile:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 exports.addProduct = async (req, res) => {
   const { name, price, quantity, description, category_id, unit_of_measure } =
