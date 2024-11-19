@@ -7,8 +7,11 @@ const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const buyerRoutes = require("./routes/buyerRoutes");
 const farmerRoutes = require("./routes/farmerRoutes");
+const publicRoutes = require("./routes/publicRoutes");
+const cors = require("cors");
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 // Routes
@@ -16,6 +19,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/buyer", buyerRoutes);
 app.use("/api/farmer", farmerRoutes);
+app.use("/api/public", publicRoutes);
 
 // Test database connection and start server
 sequelize
