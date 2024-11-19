@@ -71,7 +71,9 @@ exports.loginUser = async (req, res) => {
       email: user.email,
     });
 
-    res.status(200).json({ message: "Login successful", token });
+    res
+      .status(200)
+      .json({ message: "Login successful", token, role: user.role });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });

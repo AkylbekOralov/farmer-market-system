@@ -5,10 +5,10 @@ const isBuyer = require("../middlewares/isBuyer");
 
 const router = express.Router();
 
-// Route for viewing all products
+// View all products
 router.get("/products", isBuyer, viewProducts);
 
-// Route for placing an order
+// Place an order
 router.post("/order", isBuyer, placeOrder);
 
 module.exports = router;
