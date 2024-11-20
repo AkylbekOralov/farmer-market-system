@@ -1,26 +1,25 @@
-// routes/farmerRoutes.js
 const express = require("express");
+const multer = require("../utils/upload");
 const {
-  addProduct,
-  editProduct,
   getFarmerProfile,
+  updateFarmerProfile,
+  updateProfilePicture,
+  deleteProfilePicture,
+  getCropTypes,
 } = require("../controllers/farmerController");
 const isFarmer = require("../middlewares/isFarmer");
-const upload = require("../utils/upload"); // Import the multer upload configuration
 
 const router = express.Router();
 
 router.get("/profile", isFarmer, getFarmerProfile);
-
-// Route to add a product with up to 5 images
-router.post("/add-product", isFarmer, upload.array("images", 5), addProduct);
-
-// Route to edit a product with up to 5 new images
-router.patch(
-  "/edit-product/:id",
+router.put("/profile", isFarmer, updateFarmerProfile);
+router.post(
+  "/profile-picture",
   isFarmer,
-  upload.array("images", 5),
-  editProduct
+  multer.single("profilePicture"),
+  updateProfilePicture
 );
+router.delete("/profile-picture", isFarmer, deleteProfilePicture);
+router.get("/crop-types", isFarmer, getCropTypes); // Protect the route with `isFarmer` middleware
 
 module.exports = router;

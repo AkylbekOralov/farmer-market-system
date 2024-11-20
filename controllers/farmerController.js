@@ -1,14 +1,28 @@
-// controllers/farmerController.js
-const { Product } = require("../models");
+const { FarmersProfile, User, Category } = require("../models");
 const path = require("path");
 const fs = require("fs");
-const { FarmersProfile, User } = require("../models");
 
+// Fetch Crop Types (Categories)
+exports.getCropTypes = async (req, res) => {
+  try {
+    const categories = await Category.findAll({
+      attributes: ["id", "name"], // Fetch only the necessary fields
+      order: [["name", "ASC"]], // Order alphabetically
+    });
+
+    res.status(200).json({ categories });
+  } catch (error) {
+    console.error("Error fetching crop types:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get Farmer Profile
 exports.getFarmerProfile = async (req, res) => {
   try {
     const farmer = await FarmersProfile.findOne({
-      where: { user_id: req.user.id }, // Ensure `req.user.id` is set by middleware
-      attributes: ["farm_address", "farm_size", "types_of_crops"], // Select only necessary fields
+      where: { user_id: req.user.id },
+      attributes: ["farm_address", "farm_size", "types_of_crops"],
     });
 
     if (!farmer) {
@@ -17,12 +31,14 @@ exports.getFarmerProfile = async (req, res) => {
 
     const user = await User.findOne({
       where: { id: req.user.id },
-      attributes: ["username", "email", "profile_picture"],
+      attributes: ["username", "email", "profile_picture", "phone"],
     });
 
     res.status(200).json({
-      name: user.username,
+      username: user.username,
       email: user.email,
+      profilePicture: user.profile_picture,
+      phone: user.phone,
       farmAddress: farmer.farm_address,
       farmSize: farmer.farm_size,
       crops: farmer.types_of_crops,
@@ -33,99 +49,92 @@ exports.getFarmerProfile = async (req, res) => {
   }
 };
 
-exports.addProduct = async (req, res) => {
-  const { name, price, quantity, description, category_id, unit_of_measure } =
-    req.body;
+// Update Farmer Profile
+exports.updateFarmerProfile = async (req, res) => {
+  const { username, phone, farmAddress, farmSize, crops } = req.body;
 
   try {
-    // Process image URLs
-    const imagePaths = req.files.map((file) =>
-      path.join("uploads/product_images", file.filename)
-    );
-
-    const product = await Product.create({
-      farmer_id: req.user.id,
-      name,
-      price,
-      quantity,
-      description,
-      category_id,
-      unit_of_measure,
-      images: imagePaths, // Save image paths as an array
+    const farmer = await FarmersProfile.findOne({
+      where: { user_id: req.user.id },
     });
+    const user = await User.findOne({ where: { id: req.user.id } });
 
-    res.status(201).json({ message: "Product added successfully", product });
+    if (!farmer || !user) {
+      return res.status(404).json({ message: "Farmer profile not found" });
+    }
+
+    user.username = username || user.username;
+    user.phone = phone || user.phone;
+    farmer.farm_address = farmAddress || farmer.farm_address;
+    farmer.farm_size = farmSize || farmer.farm_size;
+    farmer.types_of_crops = crops || farmer.types_of_crops;
+
+    await user.save();
+    await farmer.save();
+
+    res.status(200).json({ message: "Profile updated successfully" });
   } catch (error) {
-    console.error(error);
+    console.error("Error updating profile:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-exports.editProduct = async (req, res) => {
-  const { id } = req.params; // product ID
-  const {
-    name,
-    price,
-    quantity,
-    description,
-    category_id,
-    unit_of_measure,
-    removeImages,
-  } = req.body;
-
+// Update Profile Picture
+exports.updateProfilePicture = async (req, res) => {
   try {
-    // Find the product
-    const product = await Product.findOne({
-      where: { id, farmer_id: req.user.id },
-    });
+    const user = await User.findOne({ where: { id: req.user.id } });
 
-    if (!product) {
-      return res.status(404).json({
-        message:
-          "Product not found or you don't have permission to edit this product.",
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Remove old profile picture from the server
+    if (user.profile_picture) {
+      const oldPath = path.join(__dirname, "../", user.profile_picture);
+      fs.unlink(oldPath, (err) => {
+        if (err) console.error("Error deleting old profile picture:", err);
       });
     }
 
-    // Update fields if provided in the request body
-    product.name = name || product.name;
-    product.price = price || product.price;
-    product.quantity = quantity || product.quantity;
-    product.description = description || product.description;
-    product.category_id = category_id || product.category_id;
-    product.unit_of_measure = unit_of_measure || product.unit_of_measure;
+    // Save the new profile picture
+    const profilePicturePath = req.file.path;
+    user.profile_picture = profilePicturePath;
 
-    // Handle removing images from the server and database
-    if (removeImages && Array.isArray(removeImages)) {
-      const updatedImages = product.images.filter(
-        (img) => !removeImages.includes(img)
-      );
+    await user.save();
 
-      // Delete the removed images from the server
-      for (const imagePath of removeImages) {
-        const fullPath = path.join(__dirname, "../", imagePath);
-        fs.unlink(fullPath, (err) => {
-          if (err) console.error(`Error deleting image ${fullPath}:`, err);
-        });
-      }
-
-      // Update product images
-      product.images = updatedImages;
-    }
-
-    // Handle new image uploads if they exist
-    if (req.files && req.files.length > 0) {
-      const newImagePaths = req.files.map((file) =>
-        path.join("uploads/product_images", file.filename)
-      );
-      product.images = [...product.images, ...newImagePaths]; // Combine existing and new images
-    }
-
-    // Save updated product
-    await product.save();
-
-    res.status(200).json({ message: "Product updated successfully", product });
+    res.status(200).json({
+      message: "Profile picture updated successfully",
+      profilePicture: profilePicturePath,
+    });
   } catch (error) {
-    console.error("Error updating product:", error);
+    console.error("Error updating profile picture:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Delete Profile Picture
+exports.deleteProfilePicture = async (req, res) => {
+  try {
+    const user = await User.findOne({ where: { id: req.user.id } });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Remove profile picture from the server
+    if (user.profile_picture) {
+      const oldPath = path.join(__dirname, "../", user.profile_picture);
+      fs.unlink(oldPath, (err) => {
+        if (err) console.error("Error deleting profile picture:", err);
+      });
+
+      user.profile_picture = null;
+      await user.save();
+    }
+
+    res.status(200).json({ message: "Profile picture deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting profile picture:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
