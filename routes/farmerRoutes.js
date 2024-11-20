@@ -1,5 +1,6 @@
+// routes/farmerRoutes.js
 const express = require("express");
-const multer = require("../utils/upload");
+const upload = require("../utils/upload"); // Use the exported multer instance
 const {
   getFarmerProfile,
   updateFarmerProfile,
@@ -16,7 +17,7 @@ router.put("/profile", isFarmer, updateFarmerProfile);
 router.post(
   "/profile-picture",
   isFarmer,
-  multer.single("profilePicture"),
+  upload.single("profilePicture"), // Correctly use the configured multer instance
   updateProfilePicture
 );
 router.delete("/profile-picture", isFarmer, deleteProfilePicture);

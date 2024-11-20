@@ -1,3 +1,4 @@
+// controllers/farmerController.js
 const { FarmersProfile, User, Category } = require("../models");
 const path = require("path");
 const fs = require("fs");
@@ -6,14 +7,14 @@ const fs = require("fs");
 exports.getCropTypes = async (req, res) => {
   try {
     const categories = await Category.findAll({
-      attributes: ["id", "name"], // Fetch only the necessary fields
-      order: [["name", "ASC"]], // Order alphabetically
+      attributes: ["id", "name"],
+      order: [["name", "ASC"]],
     });
 
     res.status(200).json({ categories });
   } catch (error) {
-    console.error("Error fetching crop types:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error fetching crop types:", error.message);
+    res.status(500).json({ message: "Failed to fetch crop types" });
   }
 };
 
@@ -41,11 +42,11 @@ exports.getFarmerProfile = async (req, res) => {
       phone: user.phone,
       farmAddress: farmer.farm_address,
       farmSize: farmer.farm_size,
-      crops: farmer.types_of_crops,
+      crops: farmer.types_of_crops || [],
     });
   } catch (error) {
-    console.error("Error fetching farmer profile:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error fetching farmer profile:", error.message);
+    res.status(500).json({ message: "Failed to fetch farmer profile" });
   }
 };
 
@@ -74,12 +75,12 @@ exports.updateFarmerProfile = async (req, res) => {
 
     res.status(200).json({ message: "Profile updated successfully" });
   } catch (error) {
-    console.error("Error updating profile:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error updating farmer profile:", error.message);
+    res.status(500).json({ message: "Failed to update profile" });
   }
 };
 
-// Update Profile Picture
+// Update Profile Picture Function
 exports.updateProfilePicture = async (req, res) => {
   try {
     const user = await User.findOne({ where: { id: req.user.id } });
@@ -90,25 +91,58 @@ exports.updateProfilePicture = async (req, res) => {
 
     // Remove old profile picture from the server
     if (user.profile_picture) {
-      const oldPath = path.join(__dirname, "../", user.profile_picture);
+      const oldPath = path.resolve(__dirname, "../", user.profile_picture);
       fs.unlink(oldPath, (err) => {
-        if (err) console.error("Error deleting old profile picture:", err);
+        if (err)
+          console.error("Error deleting old profile picture:", err.message);
       });
     }
 
     // Save the new profile picture
-    const profilePicturePath = req.file.path;
+    const profilePicturePath = `uploads/profile_pictures/${req.file.filename}`;
     user.profile_picture = profilePicturePath;
 
     await user.save();
 
     res.status(200).json({
       message: "Profile picture updated successfully",
-      profilePicture: profilePicturePath,
+      profilePicture: profilePicturePath, // Send relative path only
     });
   } catch (error) {
-    console.error("Error updating profile picture:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error updating profile picture:", error.message);
+    res.status(500).json({ message: "Failed to update profile picture" });
+  }
+};
+
+// Get Farmer Profile Function
+exports.getFarmerProfile = async (req, res) => {
+  try {
+    const farmer = await FarmersProfile.findOne({
+      where: { user_id: req.user.id },
+      attributes: ["farm_address", "farm_size", "types_of_crops"],
+    });
+
+    if (!farmer) {
+      return res.status(404).json({ message: "Farmer profile not found" });
+    }
+
+    const user = await User.findOne({
+      where: { id: req.user.id },
+      attributes: ["username", "email", "profile_picture", "phone"],
+    });
+
+    res.status(200).json({
+      username: user.username,
+      email: user.email,
+      profilePicture: user.profile_picture, // Send relative path only
+      phone: user.phone,
+      farmAddress: farmer.farm_address,
+      farmSize: farmer.farm_size,
+      crops: farmer.types_of_crops || [],
+    });
+  } catch (error) {
+    console.error("Error fetching farmer profile:", error.message);
+    res.status(500).json({ message: "Failed to fetch farmer profile" });
   }
 };
 
@@ -123,9 +157,9 @@ exports.deleteProfilePicture = async (req, res) => {
 
     // Remove profile picture from the server
     if (user.profile_picture) {
-      const oldPath = path.join(__dirname, "../", user.profile_picture);
+      const oldPath = path.resolve(__dirname, "../", user.profile_picture);
       fs.unlink(oldPath, (err) => {
-        if (err) console.error("Error deleting profile picture:", err);
+        if (err) console.error("Error deleting profile picture:", err.message);
       });
 
       user.profile_picture = null;
@@ -134,7 +168,7 @@ exports.deleteProfilePicture = async (req, res) => {
 
     res.status(200).json({ message: "Profile picture deleted successfully" });
   } catch (error) {
-    console.error("Error deleting profile picture:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error deleting profile picture:", error.message);
+    res.status(500).json({ message: "Failed to delete profile picture" });
   }
 };

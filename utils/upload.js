@@ -1,11 +1,11 @@
-// utils/upload.js
+//utils/uploads.js
 const multer = require("multer");
 const path = require("path");
 
 // Configure storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/product_images");
+    cb(null, "uploads/profile_pictures"); // Adjust path if needed
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -22,10 +22,11 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
+// Multer instance
 const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
-  limits: { fileSize: 1024 * 1024 * 5 }, // 5MB limit per image
+  storage,
+  fileFilter,
+  limits: { fileSize: 1024 * 1024 * 5 }, // 5MB limit
 });
 
-module.exports = upload;
+module.exports = upload; // Export multer instance

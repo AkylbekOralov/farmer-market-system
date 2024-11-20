@@ -1,8 +1,11 @@
 // server.js
 const express = require("express");
+const path = require("path");
 const dotenv = require("dotenv");
 dotenv.config();
 const sequelize = require("./config/db");
+
+// Import your route files
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const buyerRoutes = require("./routes/buyerRoutes");
@@ -13,6 +16,9 @@ const cors = require("cors");
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the "uploads" directory
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use("/api/auth", authRoutes);
