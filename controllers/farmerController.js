@@ -1,5 +1,5 @@
 // controllers/farmerController.js
-const { FarmersProfile, User, Category } = require("../models");
+const { FarmersProfile, User, Product, Category } = require("../models");
 const path = require("path");
 const fs = require("fs");
 
@@ -114,38 +114,6 @@ exports.updateProfilePicture = async (req, res) => {
   }
 };
 
-// Get Farmer Profile Function
-exports.getFarmerProfile = async (req, res) => {
-  try {
-    const farmer = await FarmersProfile.findOne({
-      where: { user_id: req.user.id },
-      attributes: ["farm_address", "farm_size", "types_of_crops"],
-    });
-
-    if (!farmer) {
-      return res.status(404).json({ message: "Farmer profile not found" });
-    }
-
-    const user = await User.findOne({
-      where: { id: req.user.id },
-      attributes: ["username", "email", "profile_picture", "phone"],
-    });
-
-    res.status(200).json({
-      username: user.username,
-      email: user.email,
-      profilePicture: user.profile_picture, // Send relative path only
-      phone: user.phone,
-      farmAddress: farmer.farm_address,
-      farmSize: farmer.farm_size,
-      crops: farmer.types_of_crops || [],
-    });
-  } catch (error) {
-    console.error("Error fetching farmer profile:", error.message);
-    res.status(500).json({ message: "Failed to fetch farmer profile" });
-  }
-};
-
 // Delete Profile Picture
 exports.deleteProfilePicture = async (req, res) => {
   try {
@@ -170,5 +138,50 @@ exports.deleteProfilePicture = async (req, res) => {
   } catch (error) {
     console.error("Error deleting profile picture:", error.message);
     res.status(500).json({ message: "Failed to delete profile picture" });
+  }
+};
+
+// Controller function to add a new product
+exports.addProduct = async (req, res) => {
+  const { name, description, category, price, quantity, unit_of_measure } =
+    req.body;
+
+  try {
+    // Validate category
+    const categoryData = await Category.findOne({ where: { name: category } });
+    if (!categoryData) {
+      return res.status(400).json({ message: "Invalid category" });
+    }
+
+    // Process uploaded images
+    const imagePaths = req.files.map((file) =>
+      path.join("uploads/product_images", file.filename).replace(/\\/g, "/")
+    );
+
+    // Create the product
+    const product = await Product.create({
+      farmer_id: req.user.id,
+      name,
+      description,
+      category_id: categoryData.id,
+      price,
+      quantity,
+      unit_of_measure: unit_of_measure || "kg", // Default to 'kg'
+      inventory_status:
+        quantity > 0
+          ? quantity < 5
+            ? "Low Stock"
+            : "In Stock"
+          : "Out of Stock",
+      images: imagePaths,
+    });
+
+    res.status(201).json({
+      message: "Product added successfully",
+      product,
+    });
+  } catch (error) {
+    console.error("Error adding product:", error.message);
+    res.status(500).json({ message: "Failed to add product" });
   }
 };
