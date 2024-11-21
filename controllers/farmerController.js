@@ -185,3 +185,141 @@ exports.addProduct = async (req, res) => {
     res.status(500).json({ message: "Failed to add product" });
   }
 };
+
+// Get products that a farmer sells
+exports.getFarmerProducts = async (req, res) => {
+  try {
+    const products = await Product.findAll({
+      where: { farmer_id: req.user.id },
+      attributes: [
+        "id",
+        "name",
+        "description",
+        "price",
+        "quantity",
+        "unit_of_measure",
+        "images",
+        "inventory_status",
+      ],
+      include: [
+        {
+          model: Category, // Join with Category model
+          attributes: ["name"], // Select only the `name` field
+        },
+      ],
+    });
+
+    // Format products to include `category_name`
+    const formattedProducts = products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      quantity: product.quantity,
+      unit_of_measure: product.unit_of_measure,
+      images: product.images,
+      category_name: product.Category ? product.Category.name : null,
+      inventory_status: product.inventory_status,
+    }));
+
+    res.status(200).json({ products: formattedProducts });
+  } catch (error) {
+    console.error("Error fetching farmer products:", error.message);
+    res.status(500).json({ message: "Failed to fetch products" });
+  }
+};
+
+exports.updateProduct = async (req, res) => {
+  const { productId } = req.params;
+  const { name, description, category, price, quantity, unit_of_measure } =
+    req.body;
+
+  try {
+    const product = await Product.findByPk(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Update product details
+    product.name = name || product.name;
+    product.description = description || product.description;
+    product.category = category || product.category;
+    product.price = price || product.price;
+    product.quantity = quantity || product.quantity;
+    product.unit_of_measure = unit_of_measure || product.unit_of_measure;
+
+    // Handle new images
+    if (req.files) {
+      const newImages = req.files.map((file) => file.path);
+      product.images = [...product.images, ...newImages];
+    }
+
+    await product.save();
+
+    res.status(200).json({ message: "Product updated successfully" });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({ message: "Failed to update product" });
+  }
+};
+
+exports.deleteProduct = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const product = await Product.findByPk(id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    await product.destroy();
+    res.status(200).json({ message: "Product deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    res.status(500).json({ message: "Failed to delete product" });
+  }
+};
+
+// Fetch a single product by ID
+exports.getProductDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await Product.findOne({
+      where: { id, farmer_id: req.user.id },
+    });
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.status(200).json({ product });
+  } catch (error) {
+    console.error("Error fetching product details:", error);
+    res.status(500).json({ message: "Failed to fetch product details" });
+  }
+};
+
+exports.deleteProductImage = async (req, res) => {
+  const { productId } = req.params;
+  const { imagePath } = req.body;
+
+  try {
+    const product = await Product.findByPk(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Remove the image from the product
+    product.images = product.images.filter((image) => image !== imagePath);
+
+    await product.save();
+
+    res.status(200).json({ message: "Image deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting product image:", error);
+    res.status(500).json({ message: "Failed to delete image" });
+  }
+};
