@@ -1,4 +1,3 @@
-// models/Category.js
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 
@@ -13,13 +12,14 @@ const Category = sequelize.define(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true, // Ensure the category name is unique
+      unique: true, // Ensures no duplicate category names
     },
   },
   {
     tableName: "categories",
-    timestamps: false, // Disable timestamps for this table
+    timestamps: false, // No created_at or updated_at fields
   }
 );
 
 module.exports = Category;
+
