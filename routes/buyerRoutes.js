@@ -1,6 +1,5 @@
-// routes/buyerRoutes.js
 const express = require("express");
-const { viewProducts, placeOrder } = require("../controllers/buyerController");
+const { viewProducts, placeOrder, viewCategories } = require("../controllers/buyerController"); // Import the viewCategories method
 const isBuyer = require("../middlewares/isBuyer");
 
 const router = express.Router();
@@ -10,5 +9,8 @@ router.get("/products", isBuyer, viewProducts);
 
 // Place an order
 router.post("/order", isBuyer, placeOrder);
+
+// View all categories
+router.get("/categories", isBuyer, viewCategories); // New route for categories
 
 module.exports = router;
