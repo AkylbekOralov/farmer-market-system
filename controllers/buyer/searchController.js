@@ -1,7 +1,7 @@
 const { Product, Category } = require("../../models");
 
 // Fetch all products with category details
-exports.viewProducts = async (req, res) => {
+exports.getProducts = async (req, res) => {
   try {
     const products = await Product.findAll({
       include: {
