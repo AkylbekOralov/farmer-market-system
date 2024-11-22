@@ -323,3 +323,42 @@ exports.deleteProductImage = async (req, res) => {
     res.status(500).json({ message: "Failed to delete image" });
   }
 };
+
+exports.updateProductQuantity = async (req, res) => {
+  const { productId } = req.params;
+  const { quantity } = req.body;
+
+  try {
+    if (quantity === undefined || isNaN(quantity)) {
+      return res.status(400).json({ message: "Invalid quantity value" });
+    }
+
+    const product = await Product.findByPk(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    product.quantity = parseInt(quantity); // Ensure it's an integer
+    product.inventory_status =
+      product.quantity > 0
+        ? product.quantity < 5
+          ? "Low Stock"
+          : "In Stock"
+        : "Out of Stock";
+
+    await product.save();
+
+    res.status(200).json({
+      message: "Quantity updated successfully",
+      product: { id: product.id, quantity: product.quantity },
+    });
+  } catch (error) {
+    console.error("Error updating quantity:", error.message);
+    res.status(500).json({ message: "Failed to update quantity" });
+  }
+};
+
+
+
+

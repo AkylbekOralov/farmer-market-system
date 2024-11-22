@@ -1,5 +1,6 @@
-// routes/farmerRoutes.js
 const express = require("express");
+const router = express.Router();
+
 const upload = require("../utils/upload"); // Use the exported multer instance
 const uploadProductImages = require("../utils/uploadProductImages");
 const {
@@ -14,11 +15,11 @@ const {
   updateProduct,
   deleteProduct,
   deleteProductImage,
+  updateProductQuantity,
 } = require("../controllers/farmerController");
 const isFarmer = require("../middlewares/isFarmer");
 
-const router = express.Router();
-
+// Farmer Profile Routes
 router.get("/profile", isFarmer, getFarmerProfile);
 router.put("/profile", isFarmer, updateFarmerProfile);
 router.post(
@@ -28,7 +29,11 @@ router.post(
   updateProfilePicture
 );
 router.delete("/profile-picture", isFarmer, deleteProfilePicture);
-router.get("/crop-types", isFarmer, getCropTypes); // Protect the route with `isFarmer` middleware
+
+// Crop Types
+router.get("/crop-types", isFarmer, getCropTypes);
+
+// Product Routes
 router.post(
   "/product",
   isFarmer,
@@ -36,8 +41,7 @@ router.post(
   addProduct
 );
 router.get("/products", isFarmer, getFarmerProducts);
-
-router.get("/product/:id", isFarmer, getProductDetails); // Fetch a single product by ID
+router.get("/product/:id", isFarmer, getProductDetails);
 router.put(
   "/product/:productId",
   isFarmer,
@@ -45,7 +49,11 @@ router.put(
   updateProduct
 );
 router.delete("/product/:productId/image", isFarmer, deleteProductImage);
-
-router.delete("/product/:id", isFarmer, deleteProduct); // Delete a product
+router.delete("/product/:id", isFarmer, deleteProduct);
+router.put(
+  "/product/:productId/quantity",
+  isFarmer, // Replaced `authenticateUser` with `isFarmer` for consistency
+  updateProductQuantity
+);
 
 module.exports = router;
