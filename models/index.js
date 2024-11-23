@@ -7,8 +7,9 @@ const Product = require("./Product");
 const Order = require("./Order");
 const OrderItem = require("./OrderItem");
 const Category = require("./Category");
+const Cart = require("./Cart");
 
-// Associations
+// Initialize associations
 FarmersProfile.hasMany(Product, { foreignKey: "farmer_id" });
 Product.belongsTo(FarmersProfile, { foreignKey: "farmer_id" });
 
@@ -21,6 +22,8 @@ OrderItem.belongsTo(Order, { foreignKey: "order_id" });
 Product.hasMany(OrderItem, { foreignKey: "product_id" });
 OrderItem.belongsTo(Product, { foreignKey: "product_id" });
 
+Cart.belongsTo(Product, { foreignKey: "product_id", as: "product" }); // Associate Product with Cart
+
 module.exports = {
   User,
   FarmersProfile,
@@ -30,4 +33,5 @@ module.exports = {
   Order,
   OrderItem,
   Category,
+  Cart,
 };

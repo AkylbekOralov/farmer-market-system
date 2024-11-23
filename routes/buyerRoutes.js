@@ -1,3 +1,4 @@
+// routes/buyerRoutes
 const express = require("express");
 const upload = require("../utils/upload"); // Utility for handling file uploads
 
@@ -13,6 +14,14 @@ const {
   updateBuyerProfile,
   updateProfilePicture,
 } = require("../controllers/buyer/accountController");
+
+// Import cart related methods
+const {
+  addToCart,
+  getCart,
+  removeFromCart,
+  updateCartQuantity,
+} = require("../controllers/buyer/cartController");
 
 const isBuyer = require("../middlewares/isBuyer");
 
@@ -33,5 +42,11 @@ router.post(
   upload.single("profilePicture"),
   updateProfilePicture
 ); // Update profile picture
+
+// Cart related methods
+router.post("/cart", isBuyer, addToCart);
+router.get("/cart", isBuyer, getCart);
+router.delete("/cart/:cart_id", isBuyer, removeFromCart);
+router.put("/cart/:cart_id", isBuyer, updateCartQuantity);
 
 module.exports = router;

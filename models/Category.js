@@ -1,3 +1,4 @@
+// models/Category.js
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 
@@ -22,4 +23,3 @@ const Category = sequelize.define(
 );
 
 module.exports = Category;
-
