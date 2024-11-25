@@ -1,3 +1,4 @@
+// controllers/buyer/searchController
 const { Product, Category } = require("../../models");
 
 // Fetch all products with category details

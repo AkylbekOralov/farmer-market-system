@@ -23,6 +23,13 @@ const {
   updateCartQuantity,
 } = require("../controllers/buyer/cartController");
 
+// Import order related methods
+const {
+  placeOrder,
+  getOrders,
+  getOrderDetails,
+} = require("../controllers/buyer/orderController");
+
 const isBuyer = require("../middlewares/isBuyer");
 
 const router = express.Router();
@@ -48,5 +55,10 @@ router.post("/cart", isBuyer, addToCart);
 router.get("/cart", isBuyer, getCart);
 router.delete("/cart/:cart_id", isBuyer, removeFromCart);
 router.put("/cart/:cart_id", isBuyer, updateCartQuantity);
+
+// Order related methods
+router.post("/place-order", isBuyer, placeOrder);
+router.get("/orders", isBuyer, getOrders);
+router.get("/order/:orderId", isBuyer, getOrderDetails);
 
 module.exports = router;

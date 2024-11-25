@@ -1,5 +1,5 @@
-// controllers/farmerController.js
-const { FarmersProfile, User, Product, Category } = require("../models");
+// controllers/farmer/farmerController.js
+const { FarmersProfile, User, Product, Category } = require("../../models");
 const path = require("path");
 const fs = require("fs");
 
@@ -358,7 +358,3 @@ exports.updateProductQuantity = async (req, res) => {
     res.status(500).json({ message: "Failed to update quantity" });
   }
 };
-
-
-
-

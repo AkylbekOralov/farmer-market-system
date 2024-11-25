@@ -1,3 +1,4 @@
+// controllers/buyer/buyerController.js
 const { Category } = require("../../models");
 
 // Fetch all categories

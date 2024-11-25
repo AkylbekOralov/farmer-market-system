@@ -1,3 +1,4 @@
+// routes/farmerRoutes
 const express = require("express");
 const router = express.Router();
 
@@ -16,7 +17,7 @@ const {
   deleteProduct,
   deleteProductImage,
   updateProductQuantity,
-} = require("../controllers/farmerController");
+} = require("../controllers/farmer/farmerController");
 const isFarmer = require("../middlewares/isFarmer");
 
 // Farmer Profile Routes
