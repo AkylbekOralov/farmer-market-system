@@ -1,19 +1,24 @@
 // routes/adminRoutes
 const express = require("express");
+
+// Category related
 const {
-  verifyUser,
-  getUnverifiedFarmers,
-  deactivateuser,
   addCategory,
   updateCategory,
   deleteCategory,
   listCategories,
-} = require("../controllers/adminController");
+} = require("../controllers/admin/categoryController");
+
+// Users related
+const {
+  verifyUser,
+  getUnverifiedFarmers,
+  deactivateuser,
+} = require("../controllers/admin/usersController");
+
 const isAdmin = require("../middlewares/isAdmin"); // Import the middleware
 
 const router = express.Router();
-
-// Apply the isAdmin middleware to the routes that require admin access
 
 // Admin verifies a farmer (using the farmer's user ID)
 router.put("/verify-user/:userId", isAdmin, verifyUser);
