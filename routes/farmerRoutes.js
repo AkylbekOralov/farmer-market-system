@@ -20,6 +20,9 @@ const {
 } = require("../controllers/farmer/farmerController");
 const isFarmer = require("../middlewares/isFarmer");
 
+// orderController
+const { getFarmerOrders } = require("../controllers/farmer/orderController");
+
 // Farmer Profile Routes
 router.get("/profile", isFarmer, getFarmerProfile);
 router.put("/profile", isFarmer, updateFarmerProfile);
@@ -56,5 +59,8 @@ router.put(
   isFarmer, // Replaced `authenticateUser` with `isFarmer` for consistency
   updateProductQuantity
 );
+
+// Order related
+router.get("/orders", isFarmer, getFarmerOrders);
 
 module.exports = router;
