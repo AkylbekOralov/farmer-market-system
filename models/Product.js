@@ -39,7 +39,7 @@ const Product = sequelize.define(
       allowNull: false,
     },
     quantity: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DECIMAL(10, 2), // Changed from INTEGER to DECIMAL
       allowNull: false,
     },
     unit_of_measure: {

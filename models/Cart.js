@@ -30,10 +30,10 @@ const Cart = sequelize.define(
       onDelete: "CASCADE",
     },
     quantity: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DECIMAL(10, 2), // Changed from INTEGER to DECIMAL
       allowNull: false,
       validate: {
-        min: 1,
+        min: 0.1, // Minimum value is 0.1
       },
     },
     price: {

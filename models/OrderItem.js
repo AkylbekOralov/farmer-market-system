@@ -31,12 +31,12 @@ const OrderItem = sequelize.define(
       onDelete: "CASCADE",
     },
     quantity: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DECIMAL(10, 2), // Allow decimal values for quantity
       allowNull: false,
     },
     price: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false, // Price per unit at the time of purchase
+      allowNull: false,
     },
   },
   {

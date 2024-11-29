@@ -3,10 +3,16 @@ const { Cart, Product } = require("../../models");
 
 // Add product to the cart
 exports.addToCart = async (req, res) => {
-  const { product_id, quantity } = req.body;
+  const product_id = parseInt(req.body.product_id, 10);
+  const quantity = parseFloat(req.body.quantity);
   const user_id = req.user.id;
 
   try {
+    // Validate quantity
+    if (isNaN(quantity) || quantity <= 0) {
+      return res.status(400).json({ message: "Invalid quantity provided" });
+    }
+
     // Check if the product exists
     const product = await Product.findByPk(product_id);
     if (!product) {
@@ -14,7 +20,7 @@ exports.addToCart = async (req, res) => {
     }
 
     // Check if the quantity requested is available
-    if (quantity > product.quantity) {
+    if (quantity > parseFloat(product.quantity)) {
       return res
         .status(400)
         .json({ message: "Requested quantity exceeds available stock" });
@@ -27,17 +33,16 @@ exports.addToCart = async (req, res) => {
 
     if (existingCartItem) {
       // Update quantity and price if the product is already in the cart
-      const updatedQuantity = existingCartItem.quantity + quantity;
+      const updatedQuantity = parseFloat(existingCartItem.quantity) + quantity;
 
-      // Check if the total quantity exceeds the available stock
-      if (updatedQuantity > product.quantity) {
+      if (updatedQuantity > parseFloat(product.quantity)) {
         return res
           .status(400)
           .json({ message: "Requested quantity exceeds available stock" });
       }
 
       existingCartItem.quantity = updatedQuantity;
-      existingCartItem.price = updatedQuantity * product.price;
+      existingCartItem.price = updatedQuantity * parseFloat(product.price);
 
       await existingCartItem.save();
       return res.status(200).json({
@@ -51,7 +56,7 @@ exports.addToCart = async (req, res) => {
       buyer_id: user_id,
       product_id,
       quantity,
-      price: product.price * quantity,
+      price: parseFloat(product.price) * quantity,
     });
 
     res.status(201).json({
@@ -59,7 +64,7 @@ exports.addToCart = async (req, res) => {
       cartItem,
     });
   } catch (error) {
-    console.error("Error adding to cart:", error);
+    console.error("Error adding to cart:", error.message, error.stack);
     res.status(500).json({ message: "Failed to add product to cart" });
   }
 };
