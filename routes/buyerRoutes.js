@@ -6,7 +6,10 @@ const upload = require("../utils/upload"); // Utility for handling file uploads
 const { viewCategories } = require("../controllers/buyer/buyerController");
 
 // Import product search related methods
-const { getProducts } = require("../controllers/buyer/searchController");
+const {
+  getProducts,
+  getProductsByCategory,
+} = require("../controllers/buyer/searchController");
 
 // Import account related methods
 const {
@@ -35,10 +38,11 @@ const isBuyer = require("../middlewares/isBuyer");
 const router = express.Router();
 
 // Common methods
-router.get("/products", isBuyer, getProducts);
+router.get("/categories", isBuyer, viewCategories); // New route for categorie
 
 // Product search related methods
-router.get("/categories", isBuyer, viewCategories); // New route for categories
+router.get("/products", isBuyer, getProducts);
+router.get("/categories/:categoryId/products", isBuyer, getProductsByCategory);
 
 // Account related methods
 router.get("/profile", isBuyer, getBuyerProfile); // Get buyer profile

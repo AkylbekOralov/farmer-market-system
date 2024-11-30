@@ -125,11 +125,13 @@ exports.removeFromCart = async (req, res) => {
 
 exports.updateCartQuantity = async (req, res) => {
   const { cart_id } = req.params;
-  const { quantity } = req.body;
+  let { quantity } = req.body;
 
   try {
+    quantity = parseFloat(quantity);
+
     // Check if quantity is provided and valid
-    if (quantity == null || quantity < 1) {
+    if (isNaN(quantity) || quantity < 0.5) {
       return res.status(400).json({ message: "Invalid quantity provided" });
     }
 
@@ -145,7 +147,7 @@ exports.updateCartQuantity = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    if (quantity > product.quantity) {
+    if (quantity > parseFloat(product.quantity)) {
       return res.status(400).json({
         message: "Requested quantity exceeds available stock",
       });
@@ -153,7 +155,7 @@ exports.updateCartQuantity = async (req, res) => {
 
     // Update the cart item's quantity
     cartItem.quantity = quantity;
-    cartItem.price = quantity * product.price;
+    cartItem.price = parseFloat(product.price) * quantity;
     await cartItem.save();
 
     res.status(200).json({ message: "Cart updated successfully", cartItem });
