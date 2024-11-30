@@ -1,11 +1,5 @@
-// controllers/farmer/orderController
-const {
-  Order,
-  OrderItem,
-  Product,
-  BuyersProfile,
-  User,
-} = require("../../models");
+// controllers/farmer/orderController.js
+const { Order, OrderItem, Product, User } = require("../../models");
 
 exports.getFarmerOrders = async (req, res) => {
   const farmerId = req.user.id; // Authenticated farmer's ID
@@ -23,7 +17,7 @@ exports.getFarmerOrders = async (req, res) => {
               attributes: ["id", "name", "unit_of_measure", "farmer_id"], // Include farmer_id
             },
           ],
-          attributes: ["quantity", "price"], // Include quantity and price
+          attributes: ["id", "quantity", "price", "status"], // Include id, quantity, price, and status
         },
         {
           model: User,
@@ -53,10 +47,12 @@ exports.getFarmerOrders = async (req, res) => {
               0
             ),
             items: farmerItems.map((item) => ({
+              orderItemId: item.id,
               productName: item.Product.name,
               quantity: item.quantity,
               unitOfMeasure: item.Product.unit_of_measure,
               totalPrice: item.price * item.quantity,
+              status: item.status, // Include status
             })),
           };
         }
@@ -68,5 +64,50 @@ exports.getFarmerOrders = async (req, res) => {
   } catch (error) {
     console.error("Error fetching farmer's orders:", error);
     res.status(500).json({ message: "Failed to fetch orders" });
+  }
+};
+
+exports.updateOrderItemStatus = async (req, res) => {
+  const farmerId = req.user.id;
+  const { orderItemId } = req.params;
+  const { status } = req.body;
+
+  const allowedStatuses = [
+    "Pending",
+    "Confirmed",
+    "Shipped",
+    "Delivered",
+    "Cancelled",
+  ];
+
+  if (!allowedStatuses.includes(status)) {
+    return res.status(400).json({ message: "Invalid status value" });
+  }
+
+  try {
+    // Find the order item and ensure it belongs to the farmer
+    const orderItem = await OrderItem.findOne({
+      where: { id: orderItemId },
+      include: [
+        {
+          model: Product,
+          where: { farmer_id: farmerId },
+          attributes: [], // We don't need any attributes from Product
+        },
+      ],
+    });
+
+    if (!orderItem) {
+      return res.status(404).json({ message: "Order item not found" });
+    }
+
+    // Update the status
+    orderItem.status = status;
+    await orderItem.save();
+
+    res.status(200).json({ message: "Status updated successfully" });
+  } catch (error) {
+    console.error("Error updating order item status:", error);
+    res.status(500).json({ message: "Failed to update status" });
   }
 };

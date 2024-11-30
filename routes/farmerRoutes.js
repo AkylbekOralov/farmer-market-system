@@ -21,7 +21,19 @@ const {
 const isFarmer = require("../middlewares/isFarmer");
 
 // orderController
-const { getFarmerOrders } = require("../controllers/farmer/orderController");
+const {
+  getFarmerOrders,
+  updateOrderItemStatus,
+} = require("../controllers/farmer/orderController");
+
+// inventoryController
+const {
+  getInventory,
+  updateProdQuantity,
+} = require("../controllers/farmer/inventoryController");
+
+// Reports
+const { getReports } = require("../controllers/farmer/reportsController");
 
 // Farmer Profile Routes
 router.get("/profile", isFarmer, getFarmerProfile);
@@ -62,5 +74,13 @@ router.put(
 
 // Order related
 router.get("/orders", isFarmer, getFarmerOrders);
+router.put("/order-item/:orderItemId/status", isFarmer, updateOrderItemStatus);
+
+// Inventory Routes
+router.get("/inventory", isFarmer, getInventory);
+router.put("/inventory/:productId/quantity", isFarmer, updateProdQuantity);
+
+// Reports Route
+router.get("/reports", isFarmer, getReports);
 
 module.exports = router;

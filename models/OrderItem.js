@@ -18,6 +18,7 @@ const OrderItem = sequelize.define(
       references: {
         model: Order,
         key: "id",
+        // If you're using Sequelize associations, you might not need to specify 'references' and 'onDelete' here.
       },
       onDelete: "CASCADE",
     },
@@ -31,12 +32,20 @@ const OrderItem = sequelize.define(
       onDelete: "CASCADE",
     },
     quantity: {
-      type: DataTypes.DECIMAL(10, 2), // Allow decimal values for quantity
+      type: DataTypes.DECIMAL(10, 2), // Allows decimal values for quantity
       allowNull: false,
     },
     price: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
+    },
+    status: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      defaultValue: "Pending",
+      validate: {
+        isIn: [["Pending", "Confirmed", "Shipped", "Delivered", "Cancelled"]],
+      },
     },
   },
   {
@@ -44,5 +53,7 @@ const OrderItem = sequelize.define(
     timestamps: false,
   }
 );
+
+// If you have associations defined elsewhere, ensure they are correctly set up.
 
 module.exports = OrderItem;
